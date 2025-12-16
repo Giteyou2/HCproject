@@ -1,4 +1,4 @@
-# HCproject\
+# HCproject
 
 사용법\
 VPC-manage폴더로 이동\

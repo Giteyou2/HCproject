@@ -13,6 +13,9 @@ module "eks" {
   subnet_ids = var.private_subnet_ids
   # 🔧 public subnet 사용 시 퍼블릭 노드 가능
 
+  cluster_endpoint_public_access  = true
+  cluster_endpoint_private_access = true
+  
   enable_irsa = true
   # 🔧 IAM Role for Service Account (보안 권장)
 

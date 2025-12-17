@@ -9,29 +9,42 @@ data "aws_caller_identity" "current" {}
 module "managing_vpc" {
   source = "./modules/net"
 
-  vpc_name            = "managing_vpc"
-  vpc_cidr            = "10.0.0.0/16"
-  
-  public_subnet_cidr  = "10.0.0.0/24"
-  public_subnet_az    = "ap-northeast-2a" # AZ1
-  
-  private_subnet_cidr = "10.0.10.0/24"
-  private_subnet_az   = "ap-northeast-2c" # AZ2
+  vpc_name = "managing_vpc"
+  vpc_cidr = "10.0.0.0/16"
+
+  # Public Subnet
+  public_subnet_cidr = "10.0.0.0/24"
+  public_subnet_az   = "ap-northeast-2a"
+
+  # Private Subnet A
+  private_subnet_cidr_a = "10.0.10.0/24"
+  private_subnet_az_a   = "ap-northeast-2a"
+
+  # Private Subnet C
+  private_subnet_cidr_c = "10.0.20.0/24"
+  private_subnet_az_c   = "ap-northeast-2c"
 }
 
 # 2. Service VPC 생성 (모듈 호출)
 module "service_vpc" {
   source = "./modules/net"
 
-  vpc_name            = "service_vpc"
-  vpc_cidr            = "10.10.0.0/16"
-  
-  public_subnet_cidr  = "10.10.0.0/24"
-  public_subnet_az    = "ap-northeast-2a" # AZ1
-  
-  private_subnet_cidr = "10.10.10.0/24"
-  private_subnet_az   = "ap-northeast-2c" # AZ2
+  vpc_name = "service_vpc"
+  vpc_cidr = "10.10.0.0/16"
+
+  # Public Subnet
+  public_subnet_cidr = "10.10.0.0/24"
+  public_subnet_az   = "ap-northeast-2a"
+
+  # Private Subnet A (EKS용)
+  private_subnet_cidr_a = "10.10.10.0/24"
+  private_subnet_az_a   = "ap-northeast-2a"
+
+  # Private Subnet C (EKS용)
+  private_subnet_cidr_c = "10.10.20.0/24"
+  private_subnet_az_c   = "ap-northeast-2c"
 }
+
 # main.tf (기존 코드 아래에 추가)
 
 # ==========================================
@@ -90,25 +103,15 @@ resource "aws_route" "svc_to_mng_public" {
 module "eks" {
   source = "./modules/eks"
 
-  # ✅ EKS가 올라갈 VPC (Service VPC)
-  vpc_id = module.service_vpc.vpc_id
+  vpc_id             = module.service_vpc.vpc_id
+  private_subnet_ids = module.service_vpc.private_subnet_ids
 
-  # ✅ Worker Node가 사용할 Private Subnet
-  # (modules/net 에서 private_subnet_id output이 있다고 가정)
-  private_subnet_ids = [
-    module.service_vpc.private_subnet_id
-  ]
-
-  # ==============================
-  # EKS 설정값 (필요 시 수정)
-  # ==============================
   cluster_name        = "hybrid-cloud-projectEKS"
-  kubernetes_version = "1.34" # ⚠️ EKS 미지원 시 1.29 등으로 변경
+  kubernetes_version = "1.34"
 
   node_instance_type = "t3.medium"
-
-  node_desired_size = 2
-  node_min_size     = 1
-  node_max_size     = 4
+  node_desired_size  = 2
+  node_min_size      = 1
+  node_max_size      = 4
 }
 

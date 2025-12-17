@@ -18,3 +18,8 @@ output "public_rt_id" {
 output "private_rt_id" {
   value = aws_route_table.private.id
 }
+
+output "web_server_sg_id" {
+  description = "The ID of the Web Server Security Group created in this VPC."
+  value       = aws_security_group.web_server_security_group.id
+}

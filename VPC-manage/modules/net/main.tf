@@ -80,7 +80,7 @@ resource "aws_route_table" "private" {
 }
 
 # =======================================================================
-# 5. 라우트 테이블 연결 (Association)
+# 5. 라우팅 테이블 연결 (Association)
 # 정의된 라우트 테이블을 해당 서브넷에 실제로 적용합니다.
 # =======================================================================
 
@@ -94,4 +94,52 @@ resource "aws_route_table_association" "public" {
 resource "aws_route_table_association" "private" {
   subnet_id      = aws_subnet.private.id
   route_table_id = aws_route_table.private.id
+}
+
+# =======================================================================
+# 6. 보안 그룹 정의 (Web Server Security Group)
+# 웹 서버에 필요한 HTTP, HTTPS, ICMP 트래픽을 허용합니다.
+# =======================================================================
+resource "aws_security_group" "web_server_security_group" {
+  name        = "allow-HTTP-HTTPS-ICMP"
+  description = "allow HTTP, HTTPS, ICMP"
+  vpc_id      = aws_vpc.this.id 
+
+  # --- 인바운드 규칙 (Ingress) ---
+
+  # 1. HTTP (TCP 80) 허용
+  ingress {
+    description = "HTTP access from anywhere"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # 2. HTTPS (TCP 443) 허용
+  ingress {
+    description = "HTTPS access from anywhere"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # 3. ICMP 허용
+  ingress {
+    description = "ICMP (ping) access from anywhere"
+    from_port   = -1
+    to_port     = -1
+    protocol    = "icmp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # --- 아웃바운드 규칙 (Egress) ---
+  egress {
+    description = "Allow all outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }

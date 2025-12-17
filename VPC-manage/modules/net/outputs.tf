@@ -23,3 +23,12 @@ output "web_server_sg_id" {
   description = "The ID of the Web Server Security Group created in this VPC."
   value       = aws_security_group.web_server_security_group.id
 }
+
+output "private_subnet_ids" {
+  description = "List of private subnet IDs for EKS"
+  value = [
+    aws_subnet.private_a.id,
+    aws_subnet.private_c.id
+  ]
+}
+

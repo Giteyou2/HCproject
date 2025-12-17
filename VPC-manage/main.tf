@@ -83,3 +83,32 @@ resource "aws_route" "svc_to_mng_public" {
   destination_cidr_block    = "10.0.0.0/16"
   vpc_peering_connection_id = aws_vpc_peering_connection.mng_svc_peering.id
 }
+
+# ==========================================
+# 5. EKS Cluster (Service VPC 기반)
+# ==========================================
+module "eks" {
+  source = "./modules/eks"
+
+  # ✅ EKS가 올라갈 VPC (Service VPC)
+  vpc_id = module.service_vpc.vpc_id
+
+  # ✅ Worker Node가 사용할 Private Subnet
+  # (modules/net 에서 private_subnet_id output이 있다고 가정)
+  private_subnet_ids = [
+    module.service_vpc.private_subnet_id
+  ]
+
+  # ==============================
+  # EKS 설정값 (필요 시 수정)
+  # ==============================
+  cluster_name        = "hybrid-cloud-projectEKS"
+  kubernetes_version = "1.34" # ⚠️ EKS 미지원 시 1.29 등으로 변경
+
+  node_instance_type = "t3.medium"
+
+  node_desired_size = 2
+  node_min_size     = 1
+  node_max_size     = 4
+}
+

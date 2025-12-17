@@ -22,11 +22,20 @@ resource "aws_subnet" "public" {
 }
 
 # Private Subnet: 외부 인터넷 통신이 차단되며, DB, 애플리케이션 서버 등 중요 자원이 위치합니다.
-resource "aws_subnet" "private" {
+# Private Subnet 1 (AZ-a)
+resource "aws_subnet" "private_a" {
   vpc_id            = aws_vpc.this.id
-  cidr_block        = var.private_subnet_cidr
-  availability_zone = var.private_subnet_az
-  tags = { Name = "${var.vpc_name}-privateSN" }
+  cidr_block        = var.private_subnet_cidr_a
+  availability_zone = var.private_subnet_az_a
+  tags = { Name = "${var.vpc_name}-privateSN-a" }
+}
+
+# Private Subnet 2 (AZ-c)
+resource "aws_subnet" "private_c" {
+  vpc_id            = aws_vpc.this.id
+  cidr_block        = var.private_subnet_cidr_c
+  availability_zone = var.private_subnet_az_c
+  tags = { Name = "${var.vpc_name}-privateSN-c" }
 }
 
 # =======================================================================
@@ -70,14 +79,16 @@ resource "aws_route_table" "public" {
 }
 
 # Private Route Table: 0.0.0.0/0 트래픽을 NAT Gateway로 보내 아웃바운드 통신만 허용합니다.
-resource "aws_route_table" "private" {
-  vpc_id = aws_vpc.this.id
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.this.id
-  }
-  tags = { Name = "${var.vpc_name}-privateRT" }
+resource "aws_route_table_association" "private_a" {
+  subnet_id      = aws_subnet.private_a.id
+  route_table_id = aws_route_table.private.id
 }
+
+resource "aws_route_table_association" "private_c" {
+  subnet_id      = aws_subnet.private_c.id
+  route_table_id = aws_route_table.private.id
+}
+
 
 # =======================================================================
 # 5. 라우팅 테이블 연결 (Association)

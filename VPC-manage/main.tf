@@ -113,5 +113,40 @@ module "eks" {
   node_desired_size  = 2
   node_min_size      = 1
   node_max_size      = 4
+  admin_principal_arn = "arn:aws:iam::682540795004:user/projectuser"
+
+}
+
+# EKS가 서브넷을 LB 배치 대상으로 인식하도록 태그 추가
+locals {
+  eks_cluster_tag = "kubernetes.io/cluster/${module.eks.cluster_name}"
+}
+
+# Private subnets: internal load balancer 용
+resource "aws_ec2_tag" "svc_private_subnet_cluster_tag" {
+  count       = length(module.service_vpc.private_subnet_ids)
+  resource_id = module.service_vpc.private_subnet_ids[count.index]
+  key         = local.eks_cluster_tag
+  value       = "shared"
+}
+
+resource "aws_ec2_tag" "svc_private_subnet_internal_elb_tag" {
+  count       = length(module.service_vpc.private_subnet_ids)
+  resource_id = module.service_vpc.private_subnet_ids[count.index]
+  key         = "kubernetes.io/role/internal-elb"
+  value       = "1"
+}
+
+# Public subnet: internet-facing LB 쓸 거면 public subnet에도 태그
+resource "aws_ec2_tag" "svc_public_subnet_cluster_tag" {
+  resource_id = module.service_vpc.public_subnet_id
+  key         = local.eks_cluster_tag
+  value       = "shared"
+}
+
+resource "aws_ec2_tag" "svc_public_subnet_elb_tag" {
+  resource_id = module.service_vpc.public_subnet_id
+  key         = "kubernetes.io/role/elb"
+  value       = "1"
 }
 

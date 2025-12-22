@@ -47,3 +47,10 @@ variable "node_max_size" {
   description = "Maximum number of worker nodes"
   default     = 4
 }
+
+variable "admin_principal_arn" {
+  description = "Kubernetes admin 권한을 줄 IAM Principal ARN (예: arn:aws:iam::...:user/projectuser 또는 role ARN)"
+  type        = string
+  default     = ""
+}
+

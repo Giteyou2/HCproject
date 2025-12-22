@@ -6,7 +6,7 @@ terraform init\
 terraform plan\
 terraform apply -auto-approve\
 자원 삭제시\
-terraform destroy -auto-approve\
+terraform destroy -auto-approve
 
 
 

@@ -43,6 +43,10 @@ module "service_vpc" {
   # Private Subnet C (EKS용)
   private_subnet_cidr_c = "10.10.20.0/24"
   private_subnet_az_c   = "ap-northeast-2c"
+
+  # 추가: WAF 설정 값 전달
+  name        = "basicprotect"
+  description = "basic protection for webservice"
 }
 
 # main.tf (기존 코드 아래에 추가)

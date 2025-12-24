@@ -23,3 +23,8 @@ output "svc_public_rt_id" {
 output "svc_private_rt_id" {
   value = module.service_vpc.private_rt_id
 }
+
+# WAF ARN 출력
+output "service_waf_arn" {
+  value = module.service_vpc.waf_acl_arn
+}

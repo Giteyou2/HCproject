@@ -39,3 +39,16 @@ variable "private_subnet_az_c" {
   description = "Private Subnet 가용 영역 (AZ-c)"
   type        = string
 }
+
+# WAF 변수
+variable "name" {
+  description = "WAF Web ACL Name"
+  type        = string
+  default     = "basic-waf" # 기본값 설정
+}
+
+variable "description" {
+  description = "WAF Description"
+  type        = string
+  default     = "WAF for application protection"
+}

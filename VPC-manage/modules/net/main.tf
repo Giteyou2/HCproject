@@ -103,3 +103,44 @@ resource "aws_route_table_association" "private_c" {
   subnet_id      = aws_subnet.private_c.id
   route_table_id = aws_route_table.private.id
 }
+
+# WAF 생성
+resource "aws_wafv2_web_acl" "this" {
+  count       = var.vpc_name == "service_vpc" ? 1 : 0
+  name        = var.name
+  description = var.description
+  scope       = "REGIONAL" # API Gateway, ALB는 REGIONAL 설정 필수
+
+  default_action {
+    allow {}
+  }
+
+  # AWS 관리형 규칙: Core Rule Set (CRS)
+  rule {
+    name     = "AWS-AWSManagedRulesCommonRuleSet"
+    priority = 1
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesCommonRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "${var.name}-common-rules"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = var.name
+    sampled_requests_enabled   = true
+  }
+}
